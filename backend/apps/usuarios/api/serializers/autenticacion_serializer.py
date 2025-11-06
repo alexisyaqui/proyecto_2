@@ -1,0 +1,190 @@
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django_filters.conf import settings
+from jwt.utils import force_bytes
+from rest_framework import serializers, request
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import OutstandingToken
+from django.urls import reverse
+from apps.usuarios.models import Otp
+from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_email_restablecimiento
+from apps.usuarios.utils.token_generador import generador_token
+
+Usuario = get_user_model()
+
+
+class LoginTokenObtainSerializer(TokenObtainPairSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Credenciales invalidas, email no existe')
+
+        if not usuario.check_password(password):
+            raise serializers.ValidationError(',La contraseña es invalida')
+
+        if not usuario.is_active and usuario.estado:
+            raise serializers.ValidationError('La cuenta esta desactivada')
+
+        data = super().validate({
+            'email': usuario.email,
+            'password': password
+        })
+
+        data.update({
+            'nombre_usuario': usuario.nombre_usuario,
+            'email': usuario.email
+        })
+
+        return data
+
+
+class VerificarOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    codigo = serializers.CharField(max_length=6)
+
+    def validate(self, attrs):
+        try:
+            usuario = Usuario.objects.get(email=attrs['email'])
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Usuario no encontrado')
+
+        otp_obj = Otp.objects.filter(
+            usuario=usuario,
+            codigo=attrs['codigo'],
+            usado=False,
+        ).order_by('-fecha_creacion').first()
+
+        if not otp_obj or not otp_obj.es_valido():
+            raise serializers.ValidationError('Codigo invalido o expirado')
+
+        attrs['usuario'] = usuario
+        attrs['otp_obj'] = otp_obj
+        return attrs
+
+    def save(self):
+        otp_obj = self.validated_data['otp_obj']
+        usuario = self.validated_data['usuario']
+
+        otp_obj.usado = True
+        otp_obj.save()
+
+        usuario.email_verificado = True
+        usuario.is_active = True
+        usuario.estado = True
+        usuario.save()
+
+        return usuario
+
+
+class ReenviarOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            usuario = Usuario.objects.get(email=value)
+            self.context['usuario'] = usuario
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Error el email no existe')
+        return value
+
+    def save(self):
+        email = self.validated_data['email']
+
+        usuario = self.context.get('usuario')
+        if not usuario:
+            return False
+
+        Otp.objects.filter(usuario=usuario, usado=False).update(usado=False)
+
+        nuevo_codigo = Otp.generar_codigo()
+        Otp.objects.create(
+            usuario=usuario,
+            codigo=nuevo_codigo,
+            via='email'
+        )
+
+        return enviar_opt_email(email, nuevo_codigo)
+
+
+class CambiarContrasenaSerializer(serializers.Serializer):
+    contrasena_actual = serializers.CharField(required=True, write_only=True)
+    nueva_contrasena = serializers.CharField(required=True, write_only=True)
+    nueva_contrasena2 = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        if attrs['nueva_contrasena'] != attrs['nueva_contrasena2']:
+            raise serializers.ValidationError({'nueva_contrasena': 'Las contraseñas no coinciden'})
+
+        usuario = self.context['request'].user
+        if not usuario.check_password(attrs['contrasena_actual']):
+            raise serializers.ValidationError({"contrasena_actual": 'La contraseña actual no coincide'})
+
+        return attrs
+
+    def save(self):
+
+        usuario = self.context['request'].user
+        usuario.set_password(self.validated_data['nueva_contrasena'])
+        usuario.save()
+        OutstandingToken.objects.filter(user=usuario).delete()
+
+        return usuario
+
+
+class ResetearContrasenaSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        request = self.context.get('request')
+
+        if not request:
+            raise serializers.ValidationError("El contexto de la Solicitud no se proporciono")
+
+        try:
+            usuario = Usuario.objects.get(email=email)
+            enviar_email_restablecimiento(usuario, request)
+        except Usuario.DoesNotExist:
+            pass
+
+        return attrs
+
+
+class NuevaContrasenaSerializer(serializers.Serializer):
+    uid = serializers.CharField(write_only=True)
+    token = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    re_new_password = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        new_password = attrs.get('new_password')
+        re_new_password = attrs.get('re_new_password')
+
+        if new_password != re_new_password:
+            raise serializers.ValidationError('La contraseña no coiniciden')
+
+        uid = attrs.get('uid')
+        try:
+            usuario_id = force_str(urlsafe_base64_decode(uid))
+            self.usuario = Usuario.objects.get(pk=usuario_id)
+        except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+            raise serializers.ValidationError('El enlace de reestablecimiento es invalido')
+
+        token = attrs.get('token')
+        if not default_token_generator.check_token(self.usuario, token):
+            raise serializers.ValidationError('El enlace de restablecimiento es invalido o ha expirado')
+
+        self.usuario.set_password(new_password)
+        self.usuario.save()
+        return attrs

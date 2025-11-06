@@ -1,0 +1,41 @@
+services:
+  web:
+    build: .
+    container_name: proyecto_django
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/backend
+    command:
+      - python
+      - manage.py
+      - runserver
+      - "0.0.0.0:8000"
+
+
+  db:
+    image: postgres:17
+    container_name: postgresql_v17
+    restart: unless-stopped
+    volumes:
+      - ../data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_NAME}
+      - POSTGRES_USER=${PORSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PORSTGRES_USER} -d ${POSTGRES_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data:
