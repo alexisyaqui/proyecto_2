@@ -39,7 +39,6 @@ export const loginAction = async (email: string, password: string): Promise<Logi
 
         const { access, refresh, nombre_usuario, email: userEmail } = response.data.data
 
-        console.log(response.data.data)
 
         const usuario: UsuarioInterface = {
             email: userEmail,

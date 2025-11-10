@@ -2,21 +2,17 @@ import logging
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.template.context_processors import request
-from django.utils.http import urlsafe_base64_decode
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from apps.usuarios.api.serializers.autenticacion_serializer import LoginTokenObtainSerializer, \
-    CambiarContrasenaSerializer
+from apps.usuarios.api.serializers.autenticacion_serializer import LoginTokenObtainSerializer, CambiarContrasenaSerializer
 from apps.usuarios.models import Otp
 from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_otp_sms
 
 from apps.usuarios.api.serializers.autenticacion_serializer import (VerificarOTPSerializer, ReenviarOTPSerializer,
                                                                     ResetearContrasenaSerializer, NuevaContrasenaSerializer)
-from apps.usuarios.utils.token_generador import generador_token
 
 Usuario = get_user_model()
 
@@ -145,19 +141,17 @@ class VerificarOTP(APIView):
     def post(self, request):
         serializer = VerificarOTPSerializer(data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
-            usuario = serializer.save()
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
             return Response({
+                'ok': True,
                 'message': 'Cuenta verificada, Ahora puedes iniciar sesion',
-                'usuario': {
-                    'id': usuario.id,
-                    'email': usuario.email,
-                    'nombre_usuario': usuario.get_full_name()
-
-                }
+                'data': serializer.data
             }, status=status.HTTP_200_OK)
         return Response({
-            serializer.errors
+            'ok': False,
+            'message': 'Erro al enviar el codigo OTP',
+            'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
 

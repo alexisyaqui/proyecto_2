@@ -1,18 +1,14 @@
-from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.password_validation import validate_password
+from datetime import timezone
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django_filters.conf import settings
-from jwt.utils import force_bytes
-from rest_framework import serializers, request
+from django.utils.http import urlsafe_base64_decode
+from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import OutstandingToken
-from django.urls import reverse
 from apps.usuarios.models import Otp
 from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_email_restablecimiento
-from apps.usuarios.utils.token_generador import generador_token
+
 
 Usuario = get_user_model()
 
@@ -66,7 +62,7 @@ class VerificarOTPSerializer(serializers.Serializer):
         ).order_by('-fecha_creacion').first()
 
         if not otp_obj or not otp_obj.es_valido():
-            raise serializers.ValidationError('Codigo invalido o expirado')
+            raise serializers.ValidationError({'codigo otp': 'Codigo invalido o ha sido expirado'})
 
         attrs['usuario'] = usuario
         attrs['otp_obj'] = otp_obj
@@ -90,16 +86,19 @@ class VerificarOTPSerializer(serializers.Serializer):
 class ReenviarOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
+
     def validate_email(self, value):
         try:
             usuario = Usuario.objects.get(email=value)
             self.context['usuario'] = usuario
+
         except Usuario.DoesNotExist:
             raise serializers.ValidationError('Error el email no existe')
         return value
 
     def save(self):
         email = self.validated_data['email']
+
 
         usuario = self.context.get('usuario')
         if not usuario:
@@ -111,7 +110,7 @@ class ReenviarOTPSerializer(serializers.Serializer):
         Otp.objects.create(
             usuario=usuario,
             codigo=nuevo_codigo,
-            via='email'
+            via='email',
         )
 
         return enviar_opt_email(email, nuevo_codigo)

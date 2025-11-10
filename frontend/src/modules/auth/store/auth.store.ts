@@ -3,7 +3,8 @@ import { AuthStatus, type UsuarioInterface } from "../interfaces";
 import { computed, ref } from "vue";
 
 import { useLocalStorage } from "@vueuse/core";
-import { loginAction } from "../actions";
+import { loginAction, registroAction } from "../actions";
+import { reenviarOtpActions, verificarOtpActions } from "../actions/verificacion.action";
 
 
 
@@ -51,6 +52,96 @@ export const useAuthstore = defineStore('auth', () => {
             }
         }
     };
+    
+    const registroStore = async (
+        nombre_usuario:string, 
+        nombres:string, 
+        apellidos:string, 
+        email:string, 
+        telefono:string,
+        password:string, 
+        password2:string) => {
+        try {
+            const registroResultado = await registroAction(nombre_usuario, nombres, apellidos, email, telefono, password, password2 );
+
+            if(!registroResultado.ok){
+                return {
+                    ok: false,
+                    message: registroResultado.message,
+                    errors: registroResultado.errors
+                }
+            }
+
+            return {
+                ok: true,
+                message: registroResultado.message
+            }
+
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'No se pudo conectar al servidor'
+
+            return {
+                ok: false,
+                message
+            }
+            
+        }
+    }
+
+    const verificarOtpResponse = async (email: string, codigo:Number) => {
+        try {
+             const resultadoOpt = await verificarOtpActions(email, codigo)
+
+             if(!resultadoOpt.ok){
+                return {
+                    ok: false,
+                    message: resultadoOpt.message,
+                    errors: resultadoOpt.errors
+                }
+             }
+
+             return {
+                ok: true,
+                message: resultadoOpt.message,
+             }
+
+        } catch (error) {
+
+            const message = error instanceof Error ? error.message : 'No se pudo conectar al sevidor'
+
+            return {
+                ok: false,
+                message
+            }
+            
+        }
+    }
+
+    const reenviarOtpResponse = async (email: string) => {
+        try {
+            const resultadoReenviarOtp = await reenviarOtpActions(email)
+            
+            if(!resultadoReenviarOtp.ok){
+                return {
+                    ok: false,
+                    message: resultadoReenviarOtp.message,
+                    errors: resultadoReenviarOtp.errors
+                }
+            }
+
+            return {
+                ok: true,
+                message: resultadoReenviarOtp.message
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'No se pudo conectar al servidor'
+            
+            return {
+                ok: false,
+                message: message
+            }
+        }
+    }
 
 
 
@@ -83,6 +174,9 @@ export const useAuthstore = defineStore('auth', () => {
 
         //accions
         login,
+        registroStore,
+        verificarOtpResponse,
+        reenviarOtpResponse,
 
         logout
 

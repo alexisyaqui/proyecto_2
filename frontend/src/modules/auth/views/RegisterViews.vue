@@ -11,24 +11,28 @@
 
         <div class="mt-3 sm:mx-auto sm:w-full sm:max-w-sm">
 
-            <form class="space-y-6" @submit.prevent="">
+            <form class="space-y-6" @submit.prevent="onRegistro">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="">
                         <label for="p_nombre" class="block text-sm/6 font-medium text-gray-900">Nombres:</label>
                         <div class="mt-2">
-                            <input type="p_nombre" name="p_nombre" id="p_nombre" autocomplete="p_nombre" placeholder="Nombres completos"
+                            <input type="p_nombre" name="p_nombre" id="p_nombre" autocomplete="p_nombre" placeholder="Nombres completos" v-model="myForm.Nombres" ref="nombresInputRef"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-
+                                <div v-if="errores.nombres">
+                                    <span v-for="msg in errores.nombre" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                         </div>
                     </div>
 
                     <div>
                         <label for="apellidos" class="block text-sm/6 font-medium text-gray-900">Apellidos:</label>
                         <div class="mt-2">
-                            <input type="apellidos" name="apellidos" id="apellidos" autocomplete="apellidos" placeholder="Apellidos completos" 
+                            <input type="apellidos" name="apellidos" id="apellidos" autocomplete="apellidos" placeholder="Apellidos completos" v-model="myForm.apellidos" ref="apellidosInputRef"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-                        
+                                                        <div v-if="errores.apellidos">
+                                    <span v-for="msg in errores.apellidos" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
@@ -36,9 +40,11 @@
                         <label for="nombre_usuario" class="block text-sm/6 font-medium text-gray-900">Nombre de usuario:</label>
                         <div class="mt-2">
                             <input type="nombre_usuario" name="nombre_usuario" id="nombre_usuario" 
-                                autocomplete="nombre_usuario" placeholder="Nombre de usuario"
+                                autocomplete="nombre_usuario" placeholder="Nombre de usuario" v-model="myForm.nombre_usuario" ref="nombre_usuarioInputRef"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-                        
+                                <div v-if="errores.nombre_usuario">
+                                    <span v-for="msg in errores.nombre_usuario" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
@@ -46,18 +52,22 @@
                     <div>
                         <label for="telefono" class="block text-sm/6 font-medium text-gray-900">Numero de telefono:</label>
                         <div class="mt-2">
-                            <input type="text" name="telefono" id="telefono" autocomplete="telefono" placeholder="Ingrse numero telefono"
+                            <input type="text" name="telefono" id="telefono" autocomplete="telefono" placeholder="Ingrse numero telefono" v-model="myForm.telefono" ref="telefonoInputRef"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-
+                                <div v-if="errores.telefono">
+                                    <span v-for="msg in errores.telefono" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
                     <div class="md:col-span-2">
                         <label for="email" class="block text-sm/6 font-medium text-gray-900">Correo Electronico:</label>
                         <div class="mt-2">
-                            <input type="email" name="email" id="email" autocomplete="email" placeholder="Ingrese un Correo electronico"
+                            <input type="email" name="email" id="email" autocomplete="email" placeholder="Ingrese un Correo electronico" v-model="myForm.email" ref="emailInputRef"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
-
+                                <div v-if="errores.email">
+                                    <span v-for="msg in errores.email" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
@@ -65,10 +75,13 @@
                         <div class="flex items-center justify-between">
                             <label for="password" class="block text-sm/6 font-medium text-gray-900">Contraseña:</label>
                         </div>
-                        <div class="mt-2">
-                            <input type="password" name="password" id="password" autocomplete="current-password" placeholder="Ingrese su contraseña" 
-                                class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
 
+                        <div class="mt-2">
+                            <input type="password" name="password" id="password" autocomplete="current-password" placeholder="Ingrese su contraseña" v-model="myForm.password"
+                                class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
+                                <div v-if="errores.password">
+                                    <span v-for="msg in errores.password" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
@@ -77,8 +90,12 @@
                             <label for="password2" class="block text-sm/6 font-medium text-gray-900">Confirmar Contraseña:</label>
                         </div>
                         <div class="mt-2">
-                            <input type="password" name="password2" id="password2" autocomplete="current-password2" placeholder="Confirme su contraseña" 
+                            <input type="password" name="password" id="password" autocomplete="current-password2" placeholder="Confirme su contraseña" v-model="myForm.password2"
                                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" />
+                            
+                                <div v-if="errores.password2">
+                                    <span v-for="msg in errores.password2" :key="msg" class="text-red-600 text-sm">{{ msg }}</span>
+                                </div>
                             </div>
                     </div>
 
@@ -101,5 +118,110 @@
 
 
 <script setup lang="ts">
+import { reactive, ref, watchEffect } from 'vue'
+import { useAuthstore } from '../store/auth.store'
+import { useToast } from '@/modules/composables/use.Toast'
+import { useRouter } from 'vue-router';
+
+
+const nombre_usuarioInputRef = ref<HTMLInputElement | null>(null)
+const nombresInputRef = ref<HTMLInputElement | null>(null)
+const apellidosInputRef = ref<HTMLInputElement | null>(null)
+const emailInputRef = ref<HTMLInputElement | null>(null)
+const telefonoInputRef = ref<HTMLInputElement | null>(null)
+const passwordInputRef = ref<HTMLIFrameElement | null>(null)
+const password2InputRef = ref<HTMLIFrameElement | null>(null)
+
+
+
+const registroStore = useAuthstore()
+
+const {success, error} = useToast()
+const errores = reactive<Record<string, string[]>>({})
+
+
+
+const router = useRouter()
+
+const myForm = reactive({
+    nombre_usuario:'',
+    Nombres:'',
+    apellidos:'',
+    email:'',
+    telefono:'',
+    password:'',
+    password2:''
+})
+
+
+const onRegistro = async () => {
+    Object.keys(errores).forEach((key) => delete errores[key])
+
+    if(myForm.nombre_usuario === ''){
+        return nombre_usuarioInputRef.value?.focus()
+    }
+
+    if(myForm.Nombres === ''){
+        return nombresInputRef.value?.focus()
+    }
+
+    if(myForm.apellidos === ''){
+        return apellidosInputRef.value?.focus()
+    }
+
+    if(myForm.email === ''){
+        return emailInputRef.value?.focus()
+    }
+
+    if(myForm.telefono === ''){
+        return telefonoInputRef.value?.focus()
+    }
+
+    if(myForm.password === ''){
+        return passwordInputRef.value?.focus()
+    }
+
+    if (myForm.password2 === ''){
+        return password2InputRef.value?.focus()
+    }
+
+    if (myForm.password !== myForm.password2){
+        (errores.password2 = ["Las contraseñas no coinciden"])
+  
+    }
+
+
+
+    const registrocompenente = await registroStore.registroStore(
+
+        myForm.nombre_usuario, 
+        myForm.Nombres,
+        myForm.apellidos,
+        myForm.email,
+        myForm.telefono,
+        myForm.password,
+        myForm.password2
+    )
+
+    if(registrocompenente.ok){
+        success(registrocompenente.message)
+        setTimeout(() => {
+            router.push({name: 'verificarOtp', query: {email: myForm.email}})
+        }, 3000)
+    }
+
+    if(registrocompenente.errors){
+        Object.assign(errores, registrocompenente.errors);
+
+        for (const [campo, mensajes] of Object.entries(registrocompenente.errors)){
+            setTimeout(() =>{
+                mensajes.forEach((msg) => error(`${msg}`))
+            }, 3000)
+        }
+    }
+}
+
+
+
 
 </script>

@@ -34,17 +34,19 @@ class RegistroView(APIView):
     def post(self, request):
         serializer = UsuarioSerializer(data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             serializer.save()
             return Response({
-                'message': 'Usuario creado con exito',
+                'ok': 'Usuario creado con exito',
+                'message': 'Se ha enviado un codigo de verificacion a la bandeja de tu correo electronico, ',
                 'data': serializer.data
             }, status=status.HTTP_201_CREATED)
-
-        return Response({
-            'message': 'Error al crear el usuario',
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                'ok': False,
+                'message': 'Error de validacion',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 class UsuarioDetView(APIView):
     def get(self, request, pk=None):

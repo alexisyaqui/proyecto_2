@@ -1,55 +1,51 @@
-import { apidjango } from "@/api/auth.axios";
+import { apidjango } from "@/api/auth.axios"
+import type { RegistroResponse} from "../interfaces"
+import { isAxiosError } from "axios";
 
-export interface RegisterResponse {
-    ok: boolean;
+
+export interface RegistroSuccess {
+    ok: true;
+    message: string;
+}
+
+export interface RegistroError {
+    ok: false;
     message: string;
     errors?: Record<string, string[]>;
 }
 
-export const registroAction = async (
-    nombre_usuario: string,
-    nombres: string,
-    apellidos: string,
-    telefono: string,
-    email: string,
-    password: string,
-    password2: string
-): Promise<RegisterResponse> => {
+export const registroAction = async (nombre_usuario: string, nombres: string, apellidos: string, email: string, telefono: string, password: string, password2: string): Promise<RegistroSuccess | RegistroError> => {
     try {
-        const response = await apidjango.post('/usuario/registro/', {
-            nombre_usuario,
-            nombres,
-            apellidos,
-            telefono,
-            email,
-            password,
-            password2,
-        });
+        const {data}  = await apidjango.post<RegistroResponse>('/usuario/registro/', {
+            nombre_usuario, nombres, apellidos, email, telefono, password, password2
+        })
 
-        // Suponiendo que tu DRF devuelve status 201 o 200 y un cuerpo con `message`
+
+
         return {
             ok: true,
-            message: response.data.message || 'Registro exitoso',
-        };
-    } catch (error: any) {
-        let errors: Record<string, string[]> | undefined;
-        let message = 'Error al registrar el usuario';
-
-        if (error.response?.status === 400 && error.response.data) {
-            // Manejo de errores de validación de DRF (ej: {"email": ["ya existe"]})
-            errors = error.response.data;
-            // Extraer un mensaje general (opcional)
-            message = 'Por favor, corrige los errores del formulario';
-        } else if (error.response?.data?.message) {
-            message = error.response.data.message;
-        } else if (error.message) {
-            message = error.message;
+            message:  data.message || 'Registro con exito'
         }
 
-        return {
-            ok: false,
-            message,
-            errors,
-        };
+    } catch (error) {
+
+        if(isAxiosError(error) && error.response?.data){
+
+            const {message, errors} = error.response.data;
+
+
+            return {
+                ok: false,
+                message: message || 'Error en el registro',
+                errors,
+            }
+        }
+
     }
-};
+
+    return {
+        ok: false,
+        message: 'Error de conexion al servidor'
+    }
+
+}

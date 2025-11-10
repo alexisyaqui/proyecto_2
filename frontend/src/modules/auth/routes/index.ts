@@ -15,6 +15,11 @@ export const authRoutes: RouteRecordRaw = {
             path: '/registro',
             name: 'registro',
             component: () => import('@/modules/auth/views/RegisterViews.vue')
+        },
+        {
+            path: '/verificar/otp',
+            name: 'verificarOtp',
+            component: () => import('@/modules/auth/views/VerificacionOtpView.vue')
         }
     ]
 

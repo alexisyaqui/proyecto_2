@@ -38,3 +38,16 @@ export interface Metadata {
     updatedAt?: string;
     lastLogin?: string;
 }
+
+export interface OTP{
+    message: string;
+    data: OtpData;
+}
+
+
+export interface OtpData {
+    email: string;
+    codigo: Number;
+}
+
+

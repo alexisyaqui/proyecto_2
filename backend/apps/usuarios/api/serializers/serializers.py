@@ -1,20 +1,19 @@
+import re
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.exceptions import ValidationError
 
 from apps.usuarios.models import Usuario, Otp
-from apps.usuarios.validators.validation_email import validar_email, validar_telefono
+from apps.usuarios.validators.validacion import validar_email, validar_telefono, validar_password_longitud
 from apps.usuarios.utils.enviar_email import enviar_opt_email
 
 Usuario = get_user_model()
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password]
-    )
+    password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
@@ -40,6 +39,23 @@ class UsuarioSerializer(serializers.ModelSerializer):
             for v in self.fields["email"].validators
             if not isinstance(v, UniqueValidator)
         ]
+
+
+    def validate_password(self, value):
+        
+        try:
+            validar_password_longitud(value)
+            
+        except ValidationError as e:
+            raise serializers.ValidationError(e.detail)
+
+        return value
+
+    def validate(self, attrs):
+        if attrs.get("password") != attrs.get("password2"):
+            raise serializers.ValidationError({"password2": "Las contraseñas no coinciden"})
+        return attrs
+
 
     def validate_nombre_usuario(self, value):
         usuario_id = self.instance.id if self.instance else None
@@ -77,14 +93,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
             )
 
         return telefono_limpio
+    
 
-    def validate(self, attrs):
-        if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError(
-                {"La contraseña no coinciden, vuelva a intentarlo."}
-            )
-
-        return attrs
 
     def create(self, validated_data):
         validated_data.pop("password2")
