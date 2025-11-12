@@ -43,8 +43,8 @@ def enviar_email_restablecimiento(usuario, request):
         return False
 
     token = default_token_generator.make_token(usuario)
-    uid = urlsafe_base64_encode(smart_bytes(usuario.pk))
-    reset_url = f"{settings.FRONTEND_URL}/reestablecer-contrasena/{uid}/{token}/"
+    uid64 = urlsafe_base64_encode(smart_bytes(usuario.pk))
+    reset_url = f"{settings.FRONTEND_URL}/{uid64}/{token}/"
     subject = 'Reestablece tu contraseña'
 
 

@@ -79,3 +79,27 @@ export const loginAction = async (email: string, password: string): Promise<Logi
 };
 
 
+export const LogoutActions = async (refresh: string):Promise<{ ok: boolean; message: string; errors?: any }> => {
+    try {
+        const {data} = await apidjango.post('/logout', {refresh})
+
+        return {
+            ok: true,
+            message: data.message 
+
+        }
+        
+    } catch (error) {
+        if(isAxiosError(error) && error.response?.data){
+            const {error: errormsg} = error.response.data
+
+            return{
+                ok: false,
+                message: errormsg
+
+            }
+        }
+        
+    }
+    throw new Error('Error de conexion de servidor')
+}

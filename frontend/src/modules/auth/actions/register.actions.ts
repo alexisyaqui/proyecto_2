@@ -14,19 +14,22 @@ export interface RegistroError {
     errors?: Record<string, string[]>;
 }
 
-export const registroAction = async (nombre_usuario: string, nombres: string, apellidos: string, email: string, telefono: string, password: string, password2: string): Promise<RegistroSuccess | RegistroError> => {
+export const registroAction = async (
+    nombre_usuario: string,
+    nombres: string, 
+    apellidos: string, 
+    email: string, 
+    telefono: string, 
+    password: string, 
+    password2: string): Promise<RegistroSuccess | RegistroError> => {
     try {
         const {data}  = await apidjango.post<RegistroResponse>('/usuario/registro/', {
             nombre_usuario, nombres, apellidos, email, telefono, password, password2
         })
-
-
-
         return {
             ok: true,
             message:  data.message || 'Registro con exito'
         }
-
     } catch (error) {
 
         if(isAxiosError(error) && error.response?.data){
@@ -40,9 +43,7 @@ export const registroAction = async (nombre_usuario: string, nombres: string, ap
                 errors,
             }
         }
-
     }
-
     return {
         ok: false,
         message: 'Error de conexion al servidor'

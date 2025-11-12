@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'es-es'
-TIME_ZONE = 'America/Guatemala'
+TIME_ZONE = 'America/Guatemala',
 
 TIME_ZONE = 'UTC'
 
@@ -185,9 +185,11 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "alexisdev.xy@gmail.com"
 EMAIL_HOST_PASSWORD = "lmwltmvjmycxicwd"
 
-FRONTEND_URL = "http://127.0.0.1:8000"
+FRONTEND_URL = "http://localhost:5173/reestablecer-contrasena"
 
 # CORS HEADERS
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173'
 ]
+
+

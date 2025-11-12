@@ -51,3 +51,10 @@ export interface OtpData {
 }
 
 
+export interface NuevaContrasenaData {
+    message: string;
+    new_password: string;
+    re_new_password: string;
+    uidb64: string;
+    token: string;
+}

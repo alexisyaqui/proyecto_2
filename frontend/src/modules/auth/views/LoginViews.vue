@@ -1,6 +1,6 @@
 <template>
     <div
-        class="w-full max-w-4xl mx-auto p-4 justify-center px-1 py-12 bg-white rounded-4xl shadow-lg shadow-sky-950/60 ">
+        class="w-full justify-center px-1 py-12 bg-white rounded-4xl shadow-lg shadow-sky-950/60 ">
 
         <div class="m">
             <h2 class="mt-1 text-center text-2xl/1 font-bold tracking-tight text-indigo-900 ">Inicio de Sesion</h2>
@@ -35,18 +35,30 @@
 
                 <div>
                     <button type="submit"
-                        class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Ingresar</button>
+                        class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-700 to-indigo-950 px-4 py-3 text-sm font-semibold text-white shadow-md transition duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Iniciar
+                        sesion</button>
                 </div>
             </form>
 
-            <div class="mb-3 text-md p-4 px-4">
+            <div class="mb-3 text-md py-4 px-2">
                 <input type="checkbox" class="mb-4 px-2 appearance-auto indeterminate:bg-indigo-800"
                     ref="myForm.remember">Recuerdame
             </div>
 
-            <div class="text-md">
-                <RouterLink to="/registro" class="font-semibold text-indigo-600 hover:text-indigo-500"> Si no tienes un
-                    usuario, Registrate aqui.</RouterLink>
+            <div class="flex flex-2 w-full gap gap-2">
+                <div class="mt-5 text-center px-0">
+                    <RouterLink to="/registro"
+                        class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-white px-4 py-3 text-sm font-semibold text-blue-950 shadow-md transition duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
+                        Si aun no cuentas con usuario registrate aqui.
+                    </RouterLink>
+                </div>
+
+                <div class="mt-5 text-center px-2">
+                    <RouterLink to="/olvidar/contrasena"
+                        class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-white px-4 py-3 text-sm font-semibold text-blue-950 shadow-md transition duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
+                        Olvidaste tu Contraseña
+                    </RouterLink>
+                </div>
             </div>
         </div>
     </div>

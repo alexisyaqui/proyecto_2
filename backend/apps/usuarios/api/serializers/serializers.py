@@ -25,7 +25,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "telefono",
             "email",
             "password",
-            "password2",
+            "password2"
         ]
 
     def __init__(self, *args, **kwargs):

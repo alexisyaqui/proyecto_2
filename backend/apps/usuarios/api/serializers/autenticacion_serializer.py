@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils.timezone import now
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import OutstandingToken
 from apps.usuarios.models import Otp
+
 from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_email_restablecimiento
 
 
@@ -31,7 +32,9 @@ class LoginTokenObtainSerializer(TokenObtainPairSerializer):
 
         if not usuario.is_active and usuario.estado:
             raise serializers.ValidationError('La cuenta esta desactivada')
-
+        
+        usuario.last_login = now()
+        usuario.save(update_fields=['last_login'])
         data = super().validate({
             'email': usuario.email,
             'password': password
@@ -53,7 +56,7 @@ class VerificarOTPSerializer(serializers.Serializer):
         try:
             usuario = Usuario.objects.get(email=attrs['email'])
         except Usuario.DoesNotExist:
-            raise serializers.ValidationError('Usuario no encontrado')
+            raise serializers.ValidationError({'Email': 'Correo electronico no esta registrado'})
 
         otp_obj = Otp.objects.filter(
             usuario=usuario,
@@ -85,24 +88,27 @@ class VerificarOTPSerializer(serializers.Serializer):
 
 class ReenviarOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
-
-
+    
     def validate_email(self, value):
+
+        if not value:
+            raise serializers.ValidationError({'Email': 'Debes proporcionar un correo electronico'})
+
+
         try:
             usuario = Usuario.objects.get(email=value)
             self.context['usuario'] = usuario
 
         except Usuario.DoesNotExist:
-            raise serializers.ValidationError('Error el email no existe')
+            raise serializers.ValidationError({'Email': 'El correo electronico no existe'})
         return value
 
     def save(self):
+        usuario = self.context.get('usuario')
         email = self.validated_data['email']
 
-
-        usuario = self.context.get('usuario')
         if not usuario:
-            return False
+            raise serializers.ValidationError({'Email': 'No se pudo encontrar el usuario'})
 
         Otp.objects.filter(usuario=usuario, usado=False).update(usado=False)
 
@@ -141,7 +147,7 @@ class CambiarContrasenaSerializer(serializers.Serializer):
         return usuario
 
 
-class ResetearContrasenaSerializer(serializers.Serializer):
+class OlvidarContrasenaSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate(self, attrs):
@@ -155,7 +161,7 @@ class ResetearContrasenaSerializer(serializers.Serializer):
             usuario = Usuario.objects.get(email=email)
             enviar_email_restablecimiento(usuario, request)
         except Usuario.DoesNotExist:
-            pass
+            raise serializers.ValidationError({'Email': 'Este correo electronico no esta registrado'})
 
         return attrs
 
@@ -171,19 +177,23 @@ class NuevaContrasenaSerializer(serializers.Serializer):
         re_new_password = attrs.get('re_new_password')
 
         if new_password != re_new_password:
-            raise serializers.ValidationError('La contraseña no coiniciden')
+            raise serializers.ValidationError({'Contraeña': 'Las contraseñas no coiniciden'})
 
         uid = attrs.get('uid')
         try:
             usuario_id = force_str(urlsafe_base64_decode(uid))
             self.usuario = Usuario.objects.get(pk=usuario_id)
         except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
-            raise serializers.ValidationError('El enlace de reestablecimiento es invalido')
+            raise serializers.ValidationError({'url': 'Enlace de reestablecimiento es invalido'})
 
         token = attrs.get('token')
         if not default_token_generator.check_token(self.usuario, token):
-            raise serializers.ValidationError('El enlace de restablecimiento es invalido o ha expirado')
+            raise serializers.ValidationError({'token': 'El enlace de restablecimiento es invalido o ha expirado'})
 
+        return attrs
+    
+    def save(self):
+        new_password = self.validated_data['new_password']
         self.usuario.set_password(new_password)
         self.usuario.save()
-        return attrs
+        return self.usuario

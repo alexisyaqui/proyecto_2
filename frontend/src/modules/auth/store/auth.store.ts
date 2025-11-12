@@ -3,8 +3,8 @@ import { AuthStatus, type UsuarioInterface } from "../interfaces";
 import { computed, ref } from "vue";
 
 import { useLocalStorage } from "@vueuse/core";
-import { loginAction, registroAction } from "../actions";
-import { reenviarOtpActions, verificarOtpActions } from "../actions/verificacion.action";
+import { loginAction, LogoutActions, registroAction } from "../actions";
+import { nuevaContrasenaAction, olvidarContrasenaAction, reenviarOtpActions, verificarOtpActions } from "../actions/verificacion.action";
 
 
 
@@ -24,15 +24,14 @@ export const useAuthstore = defineStore('auth', () => {
             const loginResp = await loginAction(userEmail, password);
 
             if (!loginResp.ok) {
-                logout();
                 return {
                     success: false,
-                    message: loginResp.message ?? 'Error desconocido'
+                    message: loginResp.message ?? 'Error desconocido',
                 }
             }
 
-            usuario.value = loginResp.usuario;
-            token.value = String(loginResp.access ?? '');
+            usuario.value = loginResp.usuario,
+            token.value = String(loginResp.access ?? ''),
             email.value = loginResp.usuario.email;
             authStatus.value = AuthStatus.Authenticated;
 
@@ -42,7 +41,6 @@ export const useAuthstore = defineStore('auth', () => {
             }
 
         } catch (error: unknown) {
-            logout()
 
             const message = error instanceof Error ? error.message : 'No se pudo conectar al servidor'
 
@@ -143,15 +141,88 @@ export const useAuthstore = defineStore('auth', () => {
         }
     }
 
+    const olvidarContrasenaResponse = async (email: string) =>{
+        try {
+            const resultadoOlvidarContrasena = await olvidarContrasenaAction(email)
+
+            if(!resultadoOlvidarContrasena.ok){
+                return {
+                    ok: false,
+                    message: resultadoOlvidarContrasena.message,
+                    errors: resultadoOlvidarContrasena.errors
+                }
+            }
+
+            return {
+                ok: true,
+                message: resultadoOlvidarContrasena.message
+            }
+        } catch (error) {
+
+            const message = error instanceof Error ? error.message : 'No se pudo conectar al servidor'
+            
+            return {
+                ok: false,
+                message: message
+            }
+            
+        }
+    }
+
+    const nuevaContrasenaResponse = async (
+        uidb64: string,
+        token: string,
+        new_password: string, 
+        re_new_password: string,
+
+    ) => {
+        try {
+            const resultadoNuevaContrasena = await nuevaContrasenaAction(uidb64, token, new_password, re_new_password)
+            if(!resultadoNuevaContrasena.ok){
+                return {
+                    ok: false,
+                    message: resultadoNuevaContrasena.message,
+                    errors: resultadoNuevaContrasena.errors
+                }
+            }
+
+            return {
+                ok: true,
+                message: resultadoNuevaContrasena.message
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'No se pudo conectar al servidor'
+            
+            return {
+                ok: false,
+                message: message
+            }
+        }
+
+    }
+
 
 
     //logout
-    const logout = () => {
-        authStatus.value = AuthStatus.Unauthenticated;
-        usuario.value = undefined;
-        token.value = '';
-        email.value = '';
-        return false;
+    const logout = async (refresh: string) => {
+        try {
+            const resultadoLogout = await LogoutActions(refresh)
+            if (!resultadoLogout.ok) {
+                return {
+                    ok: false,
+                    message: resultadoLogout.message,
+                    errors: resultadoLogout.errors
+                }
+            }
+
+            authStatus.value = AuthStatus.Unauthenticated;
+            usuario.value = undefined;
+            token.value = '';
+            email.value = '';
+            return false;
+        } catch (error) {
+
+        }
     }
 
 
@@ -177,6 +248,8 @@ export const useAuthstore = defineStore('auth', () => {
         registroStore,
         verificarOtpResponse,
         reenviarOtpResponse,
+        olvidarContrasenaResponse,
+        nuevaContrasenaResponse,
 
         logout
 

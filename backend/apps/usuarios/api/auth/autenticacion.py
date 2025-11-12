@@ -12,7 +12,7 @@ from apps.usuarios.models import Otp
 from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_otp_sms
 
 from apps.usuarios.api.serializers.autenticacion_serializer import (VerificarOTPSerializer, ReenviarOTPSerializer,
-                                                                    ResetearContrasenaSerializer, NuevaContrasenaSerializer)
+                                                                    OlvidarContrasenaSerializer, NuevaContrasenaSerializer)
 
 Usuario = get_user_model()
 
@@ -85,7 +85,7 @@ class LogoutView(APIView):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
-                'error': 'Token de refresco invalido o faltante'
+                'errors': 'Token de refresco invalido o faltante'
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -160,26 +160,24 @@ class ReenviarOTP(APIView):
 
     def post(self, request):
         serializers = ReenviarOTPSerializer(data=request.data)
-
-        if serializers.is_valid():
-            exito = serializers.save()
-            if exito:
-                return Response({
-                    'message': 'Nuevo codigo enviado a su bandeja de entrada de su email'
+        if serializers.is_valid(raise_exception=False):
+            serializers.save()
+            return Response({
+                    'message': 'Nuevo codigo enviado a su bandeja de entrada de su email',
+                    'data': serializers.data
                 }, status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Si el email esta registrado recibira un nuevo codigo'},
-                                status=status.HTTP_200_OK)
         else:
-            return Response({serializers.errors}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({
+                    'message': 'Error al reenviar el codigo OTP', 
+                    'errors': serializers.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
 
 class CambiarContrasena(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = CambiarContrasenaSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=False):
             serializer.save()
             return Response({
                 'message': 'Contraseña actualizada correctamente',
@@ -191,15 +189,19 @@ class CambiarContrasena(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ResetearContrasena(APIView):
+class OlvidarContrasena(APIView):
     permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
-        serializer = ResetearContrasenaSerializer(data=request.data, context={'request':request})
-        if serializer.is_valid():
+        serializer = OlvidarContrasenaSerializer(data=request.data, context={'request':request})
+        if serializer.is_valid(raise_exception=False):
             return Response({
-                'message': 'Se ha generado un enlace, revise su correo electronico'
+                'message': 'Se ha generado un enlace, revise su correo electronico', 
+                'data': serializer.data
             }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'message': 'Error al reestablecer la contraseña',
+            'errors': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class NuevaContrasena(APIView):
     permission_classes = [AllowAny]
@@ -212,8 +214,14 @@ class NuevaContrasena(APIView):
             're_new_password': request.data.get('re_new_password'),
         }
         serializer = NuevaContrasenaSerializer(data=data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=False):
+            serializer.save()
             return Response({
-                'message': 'La contraseña ha sido restablecida con exito'
+                'message': 'La contraseña ha sido restablecida con exito',
+                'data': serializer.data
             }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'message': 'Error al reestableer la contraseña',
+            'errors': serializer.errors,
+
+        }, status=status.HTTP_400_BAD_REQUEST)

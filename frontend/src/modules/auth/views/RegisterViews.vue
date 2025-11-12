@@ -103,14 +103,15 @@
 
                 <div>
                     <button type="submit"
-                        class="flex w-full justify-center rounded-md bg-indigo-900 px-3 py-1.5 text-sm/6 font-extrabold text-white shadow-lg hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Registrarse</button>
+                    class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-700 to-indigo-950 px-4 py-3 text-sm font-semibold text-white shadow-md transition duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+                    >Registrarse</button>
                 </div>
             </form>
 
 
             <div class="mt-5 text-center">
-                <RouterLink to="/login" class="font-bold text-blue-900 hover:text-indigo-200 pointer-events-auto"> Si ya tienes usuario inicia sesion. 
-                    <p class="font-extrabold text-md text-indigo-700 hover:text-indigo-200 pointer-events-auto uppercase">aqui</p></RouterLink>
+                <RouterLink to="/login" class="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-white px-4 py-3 text-sm font-semibold text-blue-950 shadow-md transition duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"> Si ya tienes usuario inicia sesion aqui.
+                    </RouterLink>
             </div>
         </div>
     </div>
@@ -132,14 +133,10 @@ const telefonoInputRef = ref<HTMLInputElement | null>(null)
 const passwordInputRef = ref<HTMLIFrameElement | null>(null)
 const password2InputRef = ref<HTMLIFrameElement | null>(null)
 
-
-
 const registroStore = useAuthstore()
 
 const {success, error} = useToast()
 const errores = reactive<Record<string, string[]>>({})
-
-
 
 const router = useRouter()
 
@@ -190,8 +187,6 @@ const onRegistro = async () => {
   
     }
 
-
-
     const registrocompenente = await registroStore.registroStore(
 
         myForm.nombre_usuario, 
@@ -221,7 +216,26 @@ const onRegistro = async () => {
     }
 }
 
+watchEffect(() => {
+  delete errores.email
+  delete errores.password2
+  delete errores.telefono
 
+
+  if(myForm.password && myForm.password2 && myForm.password !== myForm.password2){
+    errores.password2 = ['Las contraseñas no coinciden']
+  }
+
+  if (myForm.email && !myForm.email.includes('@')) {
+    errores.email = ["El correo debe contener @"]
+  }
+
+
+  if(myForm.telefono == ''){
+    errores.telefono=['El numero de telefono no puede estar vacio']
+
+  }
+})
 
 
 </script>
