@@ -6,7 +6,11 @@ from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import ValidationError
 
 from apps.usuarios.models import Usuario, Otp
-from apps.usuarios.validators.validacion import validar_email, validar_telefono, validar_password_longitud
+from apps.usuarios.validators.validacion import (
+    validar_email,
+    validar_telefono,
+    validar_password_longitud,
+)
 from apps.usuarios.utils.enviar_email import enviar_opt_email
 
 Usuario = get_user_model()
@@ -25,13 +29,25 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "telefono",
             "email",
             "password",
-            "password2"
+            "password2",
+            "email_verificado",
+            "telefono_verificado",
+            "is_staff",
+            "is_active",
+            "is_superuser",
+            "estado",
+            "fecha_creacion",
+            "fecha_modificacion",
+            "fecha_eliminacion",
         ]
+        read_only_fields = ["fecha_creacion", "fecha_modificacion", "fecha_eliminacion"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["nombre_usuario"].validators = [v for v in self.fields["nombre_usuario"].validators
+        self.fields["nombre_usuario"].validators = [
+            v
+            for v in self.fields["nombre_usuario"].validators
             if not isinstance(v, UniqueValidator)
         ]
         self.fields["email"].validators = [
@@ -40,12 +56,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
             if not isinstance(v, UniqueValidator)
         ]
 
-
     def validate_password(self, value):
-        
+
         try:
             validar_password_longitud(value)
-            
+
         except ValidationError as e:
             raise serializers.ValidationError(e.detail)
 
@@ -53,9 +68,15 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs.get("password") != attrs.get("password2"):
-            raise serializers.ValidationError({"password2": "Las contraseñas no coinciden"})
+            raise serializers.ValidationError(
+                {"password2": "Las contraseñas no coinciden"}
+            )
+            
+        fecha_creacion = self.instance.fecha_creacion if self.instance else None
+        fecha_modificacion = attrs.get("fecha_modificacion") or (self.instance.fecha_modificacion if self.instance else None)
+        fecha_eliminacion = attrs.get("fecha_eliminacion") or (self.instance.fecha_eliminacion if self.instance else None)
+        
         return attrs
-
 
     def validate_nombre_usuario(self, value):
         usuario_id = self.instance.id if self.instance else None
@@ -93,8 +114,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
             )
 
         return telefono_limpio
-    
-
 
     def create(self, validated_data):
         validated_data.pop("password2")
@@ -131,7 +150,13 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "telefono": instance.telefono,
             "email": instance.email,
             "password": instance.password,
+            "email_verificado": instance.email_verificado,
             "estado": instance.estado,
             "admin": instance.is_superuser,
             "staff": instance.is_staff,
+            "telefono_verificado": instance.telefono_verificado,
+            "last_login": instance.last_login,
+            "fecha_creacion": instance.fecha_creacion,
+            "fecha_modificacion": instance.fecha_modificacion,
+            "fecha_eliminacion": instance.fecha_eliminacion,
         }

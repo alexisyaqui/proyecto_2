@@ -5,25 +5,30 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from apps.usuarios.api.serializers.autenticacion_serializer import LoginTokenObtainSerializer, CambiarContrasenaSerializer
 from apps.usuarios.models import Otp
 from apps.usuarios.utils.enviar_email import enviar_opt_email, enviar_otp_sms
 
+from apps.usuarios.api.serializers.autenticacion_serializer import LoginTokenObtainSerializer, CambiarContrasenaSerializer
+from apps.usuarios.api.serializers.token_serializer import TokenRefreshSerializer,TokenBlackListSerializer, AutenticacionSerializer
+
 from apps.usuarios.api.serializers.autenticacion_serializer import (VerificarOTPSerializer, ReenviarOTPSerializer,
                                                                     OlvidarContrasenaSerializer, NuevaContrasenaSerializer)
+
 
 Usuario = get_user_model()
 
 logger = logging.getLogger(__name__)
 
 
-class LoginTokenObtainPair(APIView):
+class LoginTokenObtainPair(TokenObtainPairView):
     serializer_class = LoginTokenObtainSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = LoginTokenObtainSerializer(data=request.data)
+        # serializer = LoginTokenObtainSerializer(data=request.data)
         email = request.data.get('email', '').lower()
         cache_key = f"login_attempts_{email}"
         attempts = cache.get(cache_key, 0)
@@ -35,17 +40,18 @@ class LoginTokenObtainPair(APIView):
             }, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         try:
-            if serializer.is_valid(raise_exception=True):
-                return Response({
-                    'message': 'Inicio de sesion correcto',
-                    'data': serializer.validated_data
-                }, status=status.HTTP_200_OK)
+            # if serializer.is_valid(raise_exception=True):
+            response = super().post(request, *args, **kwargs)
+            cache.delete(cache_key)
 
-        except serializers.ValidationError as e:
+            return Response({
+                'message': 'Inicio de sesion correcto',
+                'data': response.data
+            }, status=status.HTTP_200_OK)
+
+        except InvalidToken:
             cache.set(cache_key, attempts + 1, timeout=180)
-            logger.warning(
-                f"Intento de loggin fallido: {request.data.get('email')}"
-            )
+            logger.warning(f"Intento de loggin fallido: {email}")
 
             return Response({
                 'error': 'Credenciales invalidas',
@@ -59,34 +65,126 @@ class LoginTokenObtainPair(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            logger.error(f'Error interno en login : {e}')
             return Response({
                 'error': 'Error interno del servidor',
                 'detalle': 'No se pudo procesar la solucitud. Intentelo mas tarde'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class TokenRefresView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = TokenRefreshSerializer
 
-class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
 
-    def post(self, request):
-
-        refresh_token = request.data.get('refresh')
-
-        if not refresh_token:
+        if not serializer.is_valid(raise_exception=False):
             return Response({
-                'error': 'Token de refresco faltante'
+                'ok': False,
+                'message': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
+            tokens_data = serializer.save()
             return Response({
-                'message': 'Sesion cerrada correctamente'
+                'ok': True,
+                'message': 'Token refrescado correctamente',
+                'data': serializer.data
             }, status=status.HTTP_200_OK)
+
         except Exception as e:
+            logger.error(f'Error en TokenFreshView: {str(e)}' )
             return Response({
-                'errors': 'Token de refresco invalido o faltante'
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'ok': False,
+                'message': 'Error interno del servidor',
+                'errors': {'detail': str(e)}
+                
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TokenBlackListView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TokenBlackListSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request}
+        )
+
+        if not serializer.is_valid(raise_exception=False):
+            return Response(
+                {
+                    "ok": False,
+                    "message": "Error al cerrar sesion",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            resultado = serializer.save()
+
+            logger.info(f"Usuario {request.user.id} cerro sesion ")
+
+            return Response(
+                {
+                "ok": True, 
+                 "message": "Sesion cerrada correctamente", 
+                 "data": {},
+                 }, status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            logger.error(f'Error en TokenBlackListView: {str(e)}', exc_info=True)
+            return Response(
+                {
+                    "ok": False,
+                    "message": "Error al cerrar sesion",
+                    "errors": {"detail": str(e)},
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class AutenticacionView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AutenticacionSerializer
+
+    def get(self, request, *args, **kwargs):
+        try:
+            serializer = self.serializer_class(data={}, context={"request": request})
+
+            if not serializer.is_valid(raise_exception=False):
+                return Response(
+                    {
+                        "ok": False,
+                        "message": "Error al obtener los datos del usuario",
+                        "data": serializer.errors,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            logger.info(f"verificacion de autenticacion para: {request.user.email}")
+
+            return Response(
+                {
+                    "ok": True,
+                    "message": "Usuario autenticado correctamente",
+                    "data": serializer.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            logger.error(f"Error de autenticacionView: {str(e)}")
+
+            return Response(
+                {
+                    "ok": False,
+                    "message": "Error al verificar la autenticacion",
+                    "errors": {"detail": str(e)},
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class SolicitarOTP(APIView):

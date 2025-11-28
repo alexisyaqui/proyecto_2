@@ -1,12 +1,21 @@
-export interface UsuarioInterface {
-    email: string;
-    password: string;
-    nombre_usuario: string,
-    get_full_name: string,
-    access: string;
-    refresh: string;
+export interface AuthResponse {
+    message: string;
+    data: {
+        nombre_usuario: string;
+        email: string;
+        access: string;
+        refresh: string;
+    }
 }
 
+export interface Usuario {
+    nombre_usuario: string;
+    email: string;
+}
+
+
+
+//registro
 export interface RegistroResponse {
     message: string;
     data: UsuarioData;
@@ -39,6 +48,8 @@ export interface Metadata {
     lastLogin?: string;
 }
 
+
+//verificar otp 
 export interface OTP{
     message: string;
     data: OtpData;
@@ -51,6 +62,7 @@ export interface OtpData {
 }
 
 
+//cambiar contraseña
 export interface NuevaContrasenaData {
     message: string;
     new_password: string;

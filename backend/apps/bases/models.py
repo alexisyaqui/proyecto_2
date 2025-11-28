@@ -7,8 +7,6 @@ class BaseModelo(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     fecha_eliminacion = models.DateTimeField(null=True, blank=True, verbose_name='fecha eliminacion')
-    #usuario_creador = models.ForeignKey('usuarios.Usuario', on_delete=models.PROTECT, related_name='%(class)s_creador', verbose_name='Creador por ')
-    #usuario_modificador = models.ForeignKey('usuarios.Usuario', on_delete=models.SET_NULL, related_name='%(class)s_modificador', null=True, blank=True, verbose_name='Modificador por ')
 
 
     def soft_delete(self):

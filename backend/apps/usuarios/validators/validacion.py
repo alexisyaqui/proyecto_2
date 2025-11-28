@@ -55,6 +55,3 @@ def validar_password_longitud(password: str):
 
         raise ValidationError({'password': mensaje})
 
-
-    if errores:
-        raise ValidationError({"password": errores})

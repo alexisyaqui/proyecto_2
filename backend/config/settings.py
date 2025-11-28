@@ -143,15 +143,18 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
 
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKEN": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -159,8 +162,8 @@ SIMPLE_JWT = {
 
     "ALGORITHM": "HS256",
 
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "AUTH_HEADER_TYPES": ('Bearer',),
+    "AUTH_HEADER_NAME": 'HTTP_AUTHORIZATION',
 }
 
 #DOCUMENTACION SCALAR
@@ -189,7 +192,10 @@ FRONTEND_URL = "http://localhost:5173/reestablecer-contrasena"
 
 # CORS HEADERS
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173'
+    'http://localhost:5173',      
+    'http://localhost:3000',      
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
 ]
 
 

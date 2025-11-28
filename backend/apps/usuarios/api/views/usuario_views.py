@@ -12,18 +12,19 @@ from apps.usuarios.utils.pagination import PaginacionPersonalizada
 
 
 class UsuarioLista(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuarios_activos = Usuario.objects.filter(estado=True)
-        if not usuarios_activos:
-            return Response({"message": "No hay registros de usuarios activos"}, status=status.HTTP_400_BAD_REQUEST)
+        usuarios = Usuario.objects.all()
+        if not usuarios:
+            return Response({"message": "No hay usuarios registrados"}, status=status.HTTP_400_BAD_REQUEST)
 
         paginator = PaginacionPersonalizada()
-        paginated_queryset = paginator.paginate_queryset(usuarios_activos, request)
+        paginated_queryset = paginator.paginate_queryset(usuarios, request)
 
         serializer = UsuarioSerializer(paginated_queryset, many=True)
         return paginator.get_paginated_response({
-            "message": "Usuarios activos",
+            "message": "Listado de usuarios",
             "data": serializer.data
         })
         # return Response({"message": "Usuarios activos", "data": serializer.data, }, status=status.HTTP_200_OK)

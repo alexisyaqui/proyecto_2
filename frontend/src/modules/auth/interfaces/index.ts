@@ -1,6 +1,8 @@
-export * from './auth.interfaces'
+export * from './auth.interfaces';
+export * from './usuarios.interface';
+
 
 //enums
-export * from './enums/auth-status.enum'
+export * from './auth-status.enum'
 
 

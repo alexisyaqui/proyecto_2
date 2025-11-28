@@ -1,7 +1,9 @@
-import {authRoutes} from '@/modules/auth/routes/index'
-import { dashboardRoutes } from '@/modules/dashboard/routes'
+
+import {authRoutes} from '@/modules/usuario/routes/index'
+
 
 import { createRouter, createWebHistory } from 'vue-router'
+import { autenticacionGuard } from '@/modules/guard/autenticacionGuard'
 
 
 
@@ -9,21 +11,22 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      redirect: '/login'
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('@/components/layout/AdminLayout.vue')
     },
 
 
       //authRoutes
-      authRoutes,
-      //
-      dashboardRoutes
+      ...authRoutes,
+      // dashboard
+  
 
   ],
 
 })
 
-
+router.beforeEach(autenticacionGuard)
 
 export default router
 
