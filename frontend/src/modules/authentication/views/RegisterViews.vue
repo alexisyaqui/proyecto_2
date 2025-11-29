@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, watchEffect } from 'vue'
-import { useAuthstore } from '@/modules/auth/store/auth.store';
+import { useAuthstore } from '@/modules/authentication/store/auth.store';
 import { useToast } from '@/modules/composables/use.Toast'
 import { useRouter } from 'vue-router';
 

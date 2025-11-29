@@ -1,13 +1,13 @@
 <template>
     <div>
-        <Loaders :show="loading" label="Iniciando sesion" />
+        <Loaders :show="loading" label="Iniciando sesion" :tiempoDuracion="3000"/>
     </div>
     <div class="w-full justify-center px-1 py-8 bg-white rounded-4xl shadow-lg shadow-sky-950/60 ">
 
         <div class="m">
             <h2 class="mt-1 text-center text-2xl/1 font-bold tracking-tight text-indigo-900 ">Inicio de Sesion</h2>
             <div class="flex justify-center mt-5">
-                <img class="w-38 h-38 object-cover rounded-4xl flex justify-center " src="../" alt="yaxy" />
+                <img src="" class="w-38 h-38 object-cover rounded-4xl flex justify-center "  alt="yaxy" />
             </div>
 
         </div>
@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { useAuthstore } from '@/modules/auth/store/auth.store';
+import { useAuthstore } from '@/modules/authentication/store/auth.store';
 import { useToast } from '@/modules/composables/use.Toast';
 import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';

@@ -118,17 +118,15 @@
 
 <script setup lang="ts">
 
-
-
-import { getUsuarioActivosAction } from '@/modules/auth/actions';
 import { useQuery } from '@tanstack/vue-query';
 import PaginacionTabla from '../../components/PaginacionTabla.vue';
 
 import InfoTabla from '../../components/InfoTabla.vue';
-import type { ListaUsuarios } from '@/modules/auth/interfaces';
+import type { ListaUsuarios } from '@/modules/authentication/interfaces';
 import { useToast } from '@/modules/composables/use.Toast';
 import { watchEffect } from 'vue';
 import Loaders from '@/modules/components/Loaders.vue';
+import { getUsuarioActivosAction } from '../../actions';
 
 
 const { error: toastError, success } = useToast()

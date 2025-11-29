@@ -1,6 +1,6 @@
-import { apidjango } from "@/api/auth.axios"
 import { isAxiosError } from "axios";
 import type { AuthResponse, Usuario } from "../../interfaces";
+import { apidjango } from '@/api';
 
 
 interface ActionSuccess {

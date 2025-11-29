@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { useAuthstore } from '@/modules/auth/store/auth.store';
+import { useAuthstore } from '@/modules/authentication/store/auth.store';
 import Loaders from '@/modules/components/Loaders.vue';
 import { ref } from 'vue';
 

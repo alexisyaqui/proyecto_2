@@ -1,6 +1,7 @@
 import { apidjango } from "@/api/auth.axios"
-import type { ListaUsuarios } from "../../interfaces"
 import { isAxiosError } from "axios";
+import type { ListaUsuarios } from "../interfaces";
+
 
 
 

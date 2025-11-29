@@ -56,4 +56,3 @@ export const loginAction = async (email: string, password: string): Promise<Acti
         errors: {}
     }
 }
-

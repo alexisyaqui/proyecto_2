@@ -1,32 +1,24 @@
+import { authRoutes } from '@/modules/authentication/routes/index';
+import { usuariosRoutes } from '@/modules/usuario/routes';
 
-import {authRoutes} from '@/modules/usuario/routes/index'
-
-
-import { createRouter, createWebHistory } from 'vue-router'
-import { autenticacionGuard } from '@/modules/guard/autenticacionGuard'
-
-
+import { createRouter, createWebHistory } from 'vue-router';
+import { autenticacionGuard } from '@/modules/guard/autenticacionGuard';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/components/layout/AdminLayout.vue')
+      path: '/',
+      redirect: 'login',
+      meta: { requiresAuth: false },
     },
 
-
-      //authRoutes
-      ...authRoutes,
-      // dashboard
-  
-
+    //authRoutes
+    ...authRoutes,
+    ...usuariosRoutes,
   ],
+});
 
-})
+router.beforeEach(autenticacionGuard);
 
-router.beforeEach(autenticacionGuard)
-
-export default router
-
+export default router;

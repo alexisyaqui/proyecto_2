@@ -1,5 +1,5 @@
 export * from './auth.interfaces';
-export * from './usuarios.interface';
+export * from '../../usuario/interfaces/usuarios.interface';
 
 
 //enums

@@ -1,4 +1,4 @@
-import type { Usuario } from "./auth.interfaces";
+import type { Usuario } from "../../authentication/interfaces/auth.interfaces";
 
 export interface ListaUsuarios {
     links: Links;

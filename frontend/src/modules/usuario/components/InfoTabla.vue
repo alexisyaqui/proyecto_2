@@ -105,7 +105,7 @@
 
 
 <script setup lang="ts">
-import type { ListaUsuarios } from '@/modules/auth/interfaces';
+import type { ListaUsuarios } from '@/modules/authentication/interfaces';
 import ImagenTabla from './ImagenTabla.vue';
 
 

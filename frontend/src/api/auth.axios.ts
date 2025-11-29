@@ -1,4 +1,4 @@
-import { useAuthstore } from "@/modules/auth/store/auth.store";
+import { useAuthstore } from "@/modules/authentication/store/auth.store";
 import router from "@/router";
 import axios from "axios";
 

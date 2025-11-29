@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-import { useAuthstore } from '@/modules/auth/store/auth.store';
+import { useAuthstore } from '@/modules/authentication/store/auth.store';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import { useToast } from '@/modules/composables/use.Toast';

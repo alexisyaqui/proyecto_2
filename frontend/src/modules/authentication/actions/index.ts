@@ -5,6 +5,3 @@ export * from './autenticacion/verificacion.action'
 export * from './autenticacion/olvidar.contrasena.action'
 export * from './autenticacion/autenticacion.action'
 export * from './autenticacion/nueva-contrasena.action'
-
-//usuarios
-export * from './usuario/get-usuarios.action';

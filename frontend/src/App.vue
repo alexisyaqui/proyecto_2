@@ -1,9 +1,9 @@
 <template>
 
-  <SidebarProvider>
+
     <RouterView />
     <VueQueryDevtools />
-  </SidebarProvider>
+
 
 
 </template>
@@ -15,8 +15,8 @@ import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
 
 
 import { onMounted } from 'vue';
-import { useAuthstore } from './modules/auth/store/auth.store';
-import {useSidebarProvider} from '@/modules/dashboard/composables/useSidebar';
+import { useAuthstore } from './modules/authentication/store/auth.store';
+
 
 const authStatus = useAuthstore()
 

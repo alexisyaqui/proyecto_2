@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_NAME'),
+        'NAME': config('POSTGRES_DB'),
         'USER': config('POSTGRES_USER'),
         'PASSWORD': config('POSTGRES_PASSWORD'),
         'HOST': config('POSTGRES_HOST'),
@@ -191,11 +191,11 @@ EMAIL_HOST_PASSWORD = "lmwltmvjmycxicwd"
 FRONTEND_URL = "http://localhost:5173/reestablecer-contrasena"
 
 # CORS HEADERS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',      
-    'http://localhost:3000',      
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:3000',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:5173',      
+#     'http://localhost:3000',      
+#     'http://127.0.0.1:5173',
+#     'http://127.0.0.1:3000',
+# ]
 
-
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='', cast=lambda v: [s.strip() for s in v.split(',') if s.strip()])
