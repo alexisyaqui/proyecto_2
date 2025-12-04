@@ -9,6 +9,12 @@ export const usuariosRoutes: RouteRecordRaw[] = [
         name: 'usuarios_activos',
         component: () => import('@/modules/usuario/views/usuario/UsuarioListaview.vue'),
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/editar-usuario/:id',
+        name: 'editar-usuario',
+        component: () => import('@/modules/usuario/views/usuario/EditarUsuario.view.vue'),
+        meta: { requiresAuth: true }
     }
 
 ]

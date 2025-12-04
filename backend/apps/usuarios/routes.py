@@ -1,5 +1,5 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+
 
 from apps.usuarios.api.views.usuario_views import (
     UsuarioDetView,
@@ -24,14 +24,13 @@ app_name = "usuarios"
 urlpatterns = [
     # ==================== REGISTRO ====================
     path("registro/", RegistroView.as_view(), name="usuarios_activos"),  # ya
-    path("login/", LoginTokenObtainPair.as_view(), name="login"),
+    path("login/", LoginTokenObtainPair.as_view(), name="login"), #ya
     # ==================== OTP ====================
     path("verificar/otp/", VerificarOTP.as_view(), name="verificar_otp"),  # ya
     path("reenviar/otp/", ReenviarOTP.as_view(), name="reenviar_otp"),  # ya
     # ==================== CONTRASEÑA ====================
     path("olvidar-contrasena/", OlvidarContrasena.as_view(), name="olvidar_contrasena"),
-    path(
-        "reestablecer-contrasena/<str:uidb64>/<str:token>/",
+    path("reestablecer-contrasena/<str:uidb64>/<str:token>/",
         NuevaContrasena.as_view(),
         name="olvidar_contrasena",
     ),

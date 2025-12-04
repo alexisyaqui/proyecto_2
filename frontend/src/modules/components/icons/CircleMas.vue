@@ -1,0 +1,8 @@
+<template>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path class="stroke-black group-hover:stroke-white"
+            d="M10.0161 14.9897V15.0397M10.0161 9.97598V10.026M10.0161 4.96231V5.01231" stroke="black"
+            stroke-width="2.5" stroke-linecap="round"></path>
+    </svg>
+
+</template>

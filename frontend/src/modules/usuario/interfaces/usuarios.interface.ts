@@ -1,4 +1,12 @@
-import type { Usuario } from "../../authentication/interfaces/auth.interfaces";
+export interface EditarUsuario {
+  id: number;
+  nombre_usuario: string;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  telefono: string
+}
+
 
 export interface ListaUsuarios {
     links: Links;
@@ -27,11 +35,10 @@ export interface UsuarioLista {
     email: string;
     password: string;
     estado: boolean;
+    admin: boolean;
+    staff: boolean;
     last_login:string;
     fecha_creacion: string;            
     fecha_modificacion: string;
     fecha_eliminacion: string | null;
-    admin: boolean;
-    staff: boolean;
-
 }

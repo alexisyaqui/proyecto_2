@@ -61,7 +61,7 @@ class UsuarioDetView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def put(self, request, pk):
+    def patch(self, request, pk):
 
         try:
             usuario = get_object_or_404(Usuario, pk=pk)

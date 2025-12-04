@@ -36,13 +36,13 @@ import { ref, watch } from 'vue'
 interface Props {
   show?: boolean;
   label?: string;
-  minimumDuration?: number; // Tiempo mínimo en ms
+  tiempoDuracion?: number; // Tiempo mínimo en ms
 }
 
 const props = withDefaults(defineProps<Props>(), {
   show: false,
   label: 'Cargando',
-  minimumDuration: 2000 // 2 segundos por defecto
+  tiempoDuracion: 2000 // 2 segundos por defecto
 });
 
 const isVisible = ref(false)
@@ -62,7 +62,7 @@ watch(() => props.show, (newValue) => {
   } else {
     // Calcular cuánto tiempo ha estado visible
     const elapsedTime = showTimestamp ? Date.now() - showTimestamp : 0
-    const remainingTime = Math.max(0, props.minimumDuration - elapsedTime)
+    const remainingTime = Math.max(0, props.tiempoDuracion - elapsedTime)
     
     // Ocultar después del tiempo restante
     hideTimeout = setTimeout(() => {

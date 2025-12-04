@@ -7,6 +7,7 @@ import type { ListaUsuarios } from "../interfaces";
 
 
 
+
 export const getUsuarioActivosAction = async ({ next, previous }: { next: number, previous: number }) => {
     try {
         const offset = (next - 1) * previous;

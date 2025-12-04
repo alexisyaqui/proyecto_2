@@ -40,7 +40,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "fecha_modificacion",
             "fecha_eliminacion",
         ]
-        read_only_fields = ["fecha_creacion", "fecha_modificacion", "fecha_eliminacion"]
+        read_only_fields = [
+           "fecha_creacion",
+            "fecha_modificacion",
+            "fecha_eliminacion",
+            "last_login"
+            ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,11 +76,15 @@ class UsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"password2": "Las contraseñas no coinciden"}
             )
-            
+
         fecha_creacion = self.instance.fecha_creacion if self.instance else None
-        fecha_modificacion = attrs.get("fecha_modificacion") or (self.instance.fecha_modificacion if self.instance else None)
-        fecha_eliminacion = attrs.get("fecha_eliminacion") or (self.instance.fecha_eliminacion if self.instance else None)
-        
+        fecha_modificacion = attrs.get("fecha_modificacion") or (
+            self.instance.fecha_modificacion if self.instance else None
+        )
+        fecha_eliminacion = attrs.get("fecha_eliminacion") or (
+            self.instance.fecha_eliminacion if self.instance else None
+        )
+
         return attrs
 
     def validate_nombre_usuario(self, value):
@@ -136,6 +145,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return usuario
 
     def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        validated_data.pop("password2", None)
+
+        if password:
+            instance.set_password(password)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
