@@ -9,6 +9,7 @@ interface EliminarSuccess {
 interface EliminarError {
   ok: false;
   message: string;
+  errors: Record<string, string[]>
 }
 
 export const eliminarUsuarioAction = async (
@@ -26,10 +27,14 @@ export const eliminarUsuarioAction = async (
 
     };
   } catch (error) {
-    if (isAxiosError(error)) {
+    if (isAxiosError(error) && error.response) {
+      const {status, data} = error.response
+      const message = data?.message || error.message || 'Error al desactivar el usuario';
+      
       return {
         ok: false,
         message: error.response?.data.message || 'Error al eliminar el usuario',
+        errors: data
       };
     }
   }

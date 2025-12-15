@@ -1,3 +1,4 @@
+from datetime import timezone
 import re
 from django.contrib.auth import get_user_model
 
@@ -41,11 +42,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "fecha_eliminacion",
         ]
         read_only_fields = [
-           "fecha_creacion",
+            "fecha_creacion",
             "fecha_modificacion",
             "fecha_eliminacion",
-            "last_login"
-            ]
+            "last_login",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -148,6 +149,16 @@ class UsuarioSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password", None)
         validated_data.pop("password2", None)
 
+        nuevo_estado = validated_data.get('estado', 'is_active', instance.estado, instance.is_active)
+
+        if(nuevo_estado is False and instance.estado is True):
+            validated_data['fecha_eliminacion'] = timezone.now()
+        
+        elif nuevo_estado is True and instance.estado is False:
+            validated = validated_data.copy()
+            validated['fecha_eliminacion']= None
+            validated_data = validated
+            
         if password:
             instance.set_password(password)
 
@@ -155,6 +166,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+    
 
     def to_representation(self, instance):
         return {
@@ -164,7 +176,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "apellidos": instance.apellidos,
             "telefono": instance.telefono,
             "email": instance.email,
-            "password": instance.password,
             "email_verificado": instance.email_verificado,
             "estado": instance.estado,
             "admin": instance.is_superuser,
